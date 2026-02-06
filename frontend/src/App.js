@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 
+const API_URL = "https://ai-sugarcane-disease-advisor.onrender.com";
 function App() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -106,10 +107,11 @@ function App() {
 
     try {
       setLoading(true);
-      const res = await axios.post(
-        "http://localhost:5000/api/predict",
-        formData
-      );
+       const res = await axios.post(
+  `${API_URL}/api/predict`,
+  formData
+);
+
       setResult(res.data);
     } catch {
       alert("Prediction failed");
