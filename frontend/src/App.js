@@ -194,7 +194,7 @@ function App() {
           <input
             type="file"
             accept="image/*"
-            capture="environment"
+            
             onChange={handleImageChange}
             style={{ display: "none" }}
           />
