@@ -12,6 +12,12 @@ const { applyWeatherRules } = require("../services/ruleEngine");
 const router = express.Router();
 
 /* ======================
+   ENV VARIABLES
+====================== */
+const ML_API_URL = process.env.ML_API_URL;
+const ML_API_KEY = process.env.ML_API_KEY;
+
+/* ======================
    MULTER CONFIG
 ====================== */
 const uploadDir = path.join(__dirname, "../uploads");
@@ -28,19 +34,26 @@ router.post("/predict", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "Image not received" });
     }
 
-    /* 1️⃣ Flask AI prediction */
+    /* 1️⃣ Prepare image for ML API */
     const formData = new FormData();
     formData.append("image", fs.createReadStream(req.file.path));
 
+    /* 2️⃣ Call FLASK ML API (Railway) */
     const flaskRes = await axios.post(
-      "http://127.0.0.1:8000/predict",
+      `${ML_API_URL}/predict`,
       formData,
-      { headers: formData.getHeaders() }
+      {
+        headers: {
+          ...formData.getHeaders(),
+          "x-api-key": ML_API_KEY   // 🔐 Secure key
+        },
+        timeout: 30000
+      }
     );
 
-    const disease = flaskRes.data.disease;
+    const { crop, disease, confidence } = flaskRes.data;
 
-    /* 2️⃣ Disease advisory */
+    /* 3️⃣ Disease advisory */
     const advisoryData = advisory[disease] || {
       reason: "Is disease ki advisory abhi available nahi hai.",
       effects: [],
@@ -48,34 +61,34 @@ router.post("/predict", upload.single("image"), async (req, res) => {
       prevention: []
     };
 
-    /* 3️⃣ Weather data (TEMP city hardcoded) */
+    /* 4️⃣ Weather data */
     const weather = await getWeather("Lucknow");
 
-    /* 4️⃣ Weather + Disease rule engine */
+    /* 5️⃣ Weather + Disease rule engine */
     const weatherAdvice = weather
       ? applyWeatherRules(disease, weather)
       : [];
 
-    /* 5️⃣ Cleanup */
+    /* 6️⃣ Cleanup uploaded file */
     fs.unlinkSync(req.file.path);
 
-    /* 6️⃣ FINAL RESPONSE */
+    /* 7️⃣ FINAL RESPONSE */
     return res.json({
-      crop: flaskRes.data.crop,
+      crop,
       disease,
-      confidence: flaskRes.data.confidence,
-      weather, // 🔥 THIS WAS MISSING
+      confidence,
+      weather,
       explanation: {
         reason: advisoryData.reason,
         effects: advisoryData.effects,
         treatment: advisoryData.treatment,
         prevention: advisoryData.prevention,
-        weather_advice: weatherAdvice // 🔥 NEW
+        weather_advice: weatherAdvice
       }
     });
 
   } catch (err) {
-    console.error("Prediction error:", err.message);
+    console.error("Prediction error:", err.response?.data || err.message);
     return res.status(500).json({ error: "Prediction failed" });
   }
 });
