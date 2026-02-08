@@ -45,13 +45,22 @@ router.post("/predict", upload.single("image"), async (req, res) => {
       {
         headers: {
           ...formData.getHeaders(),
-          "x-api-key": ML_API_KEY   // 🔐 Secure key
+          "x-api-key": ML_API_KEY
         },
         timeout: 30000
       }
     );
 
     const { crop, disease, confidence } = flaskRes.data;
+
+    /* ❌ NEW: Reject wrong / unclear image */
+    if (confidence < 75) {
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+        error: "Wrong crop image. Please upload a clear sugarcane leaf image."
+      });
+    }
 
     /* 3️⃣ Disease advisory */
     const advisoryData = advisory[disease] || {
