@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 
-const API_URL = "https://ai-sugarcane-disease-advisor.onrender.com";
+const API_URL = "https://ai-sugarcane-disease-advisor-1.onrender.com";
 function App() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
