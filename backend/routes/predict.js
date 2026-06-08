@@ -96,10 +96,14 @@ router.post("/predict", upload.single("image"), async (req, res) => {
       }
     });
 
-  } catch (err) {
-    console.error("Prediction error:", err.response?.data || err.message);
-    return res.status(500).json({ error: "Prediction failed" });
-  }
-});
+  }catch (err) {
+  console.error("FULL ERROR:", err.message);
+  console.error("RESPONSE:", err.response?.data);
+
+  return res.status(500).json({
+    error: err.message,
+    details: err.response?.data
+  });
+}
 
 module.exports = router;
