@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+const WEATHER_API_KEY ="7bf7c0663dd1205197145ccf73148755";
 
 async function getWeather(city = "Lucknow") {
   try {
