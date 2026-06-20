@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const WEATHER_API_KEY = "7bf7c0663dd1205197145ccf73148755"; // ✅ key sahi format me
+const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
 
 async function getWeather(city = "Lucknow") {
   try {
@@ -24,18 +24,14 @@ async function getWeather(city = "Lucknow") {
     };
 
   } catch (error) {
-    if (error.response) {
-      // 👇 API ne error diya
-      console.error(
-        "❌ Weather API Error:",
-        error.response.status,
-        error.response.data.message
-      );
-    } else {
-      // 👇 network / timeout
-      console.error("❌ Weather API Network Error:", error.message);
-    }
-    return null;
+    console.log("Weather skipped");
+
+    return {
+      temperature: "N/A",
+      humidity: "N/A",
+      condition: "Unavailable",
+      description: "Unavailable"
+    };
   }
 }
 
