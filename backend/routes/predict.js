@@ -105,5 +105,6 @@ router.post("/predict", upload.single("image"), async (req, res) => {
     details: err.response?.data
   });
 }
+   });
 
 module.exports = router;
